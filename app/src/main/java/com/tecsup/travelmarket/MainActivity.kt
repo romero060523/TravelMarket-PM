@@ -11,6 +11,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
+import com.tecsup.travelmarket.navigation.NavGraph
+import com.tecsup.travelmarket.navigation.Screen
+import com.tecsup.travelmarket.ui.components.BottomNavigationBar
 import com.tecsup.travelmarket.ui.theme.TravelMarketTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,13 +23,29 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             TravelMarketTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                val navController = rememberNavController()
+                val items = listOf(
+                    Screen.Home,
+                    Screen.Favorites,
+                    Screen.Profile
+                )
+
+                Scaffold(
+                    bottomBar = {
+                        BottomNavigationBar(
+                            items = items,
+                            navController = navController
+                        )
+                    }
+                ) { innerPadding ->
+                    NavGraph(
+                        navController = navController,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
+
+
         }
     }
 }
