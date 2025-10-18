@@ -67,7 +67,7 @@ fun EventsScreen(
                 }
             } else if (uiState.error != null) {
                 ErrorView(
-                    message = uiState.error,
+                    message = uiState.error ?: "Error desconocido",
                     onRetry = { viewModel.loadInitialData() }
                 )
             } else if (uiState.filteredEvents.isEmpty()) {

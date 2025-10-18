@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,6 +23,7 @@ import coil.compose.AsyncImage
 import com.travelmarket.app.model.Place
 import com.travelmarket.app.model.Event
 import com.travelmarket.app.model.Service
+import com.travelmarket.app.ui.theme.TravelMarketOrange
 
 @Composable
 fun PlaceCard(
@@ -93,21 +95,35 @@ fun PlaceCard(
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
+                    Icon(
+                        imageVector = Icons.Default.LocationOn,
+                        contentDescription = "Ubicación",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    
+                    Spacer(modifier = Modifier.width(4.dp))
+                    
                     Text(
                         text = place.location,
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     
                     Spacer(modifier = Modifier.weight(1f))
                     
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
+                    // Tag de categoría como en Figma
+                    Card(
+                        colors = CardDefaults.cardColors(
+                            containerColor = TravelMarketOrange
+                        ),
+                        shape = RoundedCornerShape(12.dp)
                     ) {
                         Text(
-                            text = "★ ${place.rating}",
-                            style = MaterialTheme.typography.bodySmall,
-                            fontWeight = FontWeight.Medium
+                            text = place.category.toString().replace("_", " ").lowercase().replaceFirstChar { it.uppercase() },
+                            style = MaterialTheme.typography.labelSmall,
+                            color = Color.White,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
                     }
                 }

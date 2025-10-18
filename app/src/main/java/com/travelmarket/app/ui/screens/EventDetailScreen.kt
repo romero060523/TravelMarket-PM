@@ -6,7 +6,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -116,7 +121,7 @@ fun EventDetailScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Schedule,
+                        imageVector = Icons.Default.Info,
                         contentDescription = "Fecha y hora",
                         tint = MaterialTheme.colorScheme.secondary,
                         modifier = Modifier.size(20.dp)
@@ -174,7 +179,7 @@ fun EventDetailScreen(
                 
                 event.capacity?.let { capacity ->
                     InfoCard(
-                        icon = Icons.Default.Group,
+                        icon = Icons.Default.Person,
                         title = "Capacidad",
                         content = "$capacity personas"
                     )

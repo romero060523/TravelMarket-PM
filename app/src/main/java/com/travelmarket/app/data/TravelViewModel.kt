@@ -18,7 +18,7 @@ class TravelViewModel : ViewModel() {
         loadInitialData()
     }
     
-    private fun loadInitialData() {
+    fun loadInitialData() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 places = repository.getAllPlaces(),

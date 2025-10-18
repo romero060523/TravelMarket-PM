@@ -8,7 +8,13 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +29,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.travelmarket.app.data.TravelViewModel
 import com.travelmarket.app.navigation.Screen
 import com.travelmarket.app.ui.components.*
+import com.travelmarket.app.ui.theme.TravelMarketTeal
+import com.travelmarket.app.ui.theme.TravelMarketOrange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,14 +44,46 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = { 
-                    Text(
-                        text = "TravelMarket",
-                        fontWeight = FontWeight.Bold
-                    ) 
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Logo circular como en Figma
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(
+                                    Color.White,
+                                    RoundedCornerShape(8.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Place,
+                                contentDescription = "Logo",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        
+                        Spacer(modifier = Modifier.width(12.dp))
+                        
+                        Text(
+                            text = "TravelMarket",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
                 },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
                 actions = {
                     IconButton(onClick = { navController.navigate(Screen.Search.route) }) {
-                        Icon(Icons.Default.Search, contentDescription = "Buscar")
+                        Icon(
+                            Icons.Default.Search, 
+                            contentDescription = "Buscar",
+                            tint = Color.White
+                        )
                     }
                 }
             )
@@ -63,13 +103,13 @@ fun HomeScreen(
                     onClick = { navController.navigate(Screen.Places.route) }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Event, contentDescription = "Eventos") },
+                    icon = { Icon(Icons.Default.Info, contentDescription = "Eventos") },
                     label = { Text("Eventos") },
                     selected = false,
                     onClick = { navController.navigate(Screen.Events.route) }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.DirectionsBus, contentDescription = "Servicios") },
+                    icon = { Icon(Icons.Default.Info, contentDescription = "Servicios") },
                     label = { Text("Servicios") },
                     selected = false,
                     onClick = { navController.navigate(Screen.Services.route) }
@@ -256,8 +296,8 @@ data class CategoryItem(
 )
 
 fun getCategoryItems(): List<CategoryItem> = listOf(
-    CategoryItem("Lugares", Icons.Default.Place, Color(0xFF4CAF50), Screen.Places.route),
-    CategoryItem("Eventos", Icons.Default.Event, Color(0xFF2196F3), Screen.Events.route),
-    CategoryItem("Gastronomía", Icons.Default.Restaurant, Color(0xFFFF9800), Screen.Places.route),
-    CategoryItem("Transporte", Icons.Default.DirectionsBus, Color(0xFF9C27B0), Screen.Services.route)
+    CategoryItem("Lugares", Icons.Default.Place, TravelMarketTeal, Screen.Places.route),
+    CategoryItem("Eventos", Icons.Default.Info, TravelMarketOrange, Screen.Events.route),
+    CategoryItem("Gastronomía", Icons.Default.Info, TravelMarketTeal, Screen.Places.route),
+    CategoryItem("Transporte", Icons.Default.Info, TravelMarketOrange, Screen.Services.route)
 )

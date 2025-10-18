@@ -5,7 +5,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.foundation.background
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -190,7 +194,7 @@ fun ProfileScreen(
                         ListItem(
                             headlineContent = { Text("Modo Oscuro") },
                             leadingContent = {
-                                Icon(Icons.Default.DarkMode, contentDescription = "Modo Oscuro")
+                                Icon(Icons.Default.Settings, contentDescription = "Modo Oscuro")
                             },
                             trailingContent = {
                                 Switch(
@@ -205,7 +209,7 @@ fun ProfileScreen(
                         ListItem(
                             headlineContent = { Text("Idioma") },
                             leadingContent = {
-                                Icon(Icons.Default.Language, contentDescription = "Idioma")
+                                Icon(Icons.Default.Settings, contentDescription = "Idioma")
                             },
                             trailingContent = {
                                 Text("Español")
