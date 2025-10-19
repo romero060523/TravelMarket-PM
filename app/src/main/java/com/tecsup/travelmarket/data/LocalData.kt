@@ -79,9 +79,11 @@ object LocalData {
             imageRes = R.drawable.map,
             location = "Estadio Nacional, Lima",
             date = "26/07/2019",
+            time = "9:00 AM",
             schedule = "9:00 AM - 10:00 PM",
             category = EventCategory.SPORTS,
-            price = 50.0
+            price = 50.0,
+            capacity = 50000
         ),
         Event(
             id = 2,
@@ -90,9 +92,11 @@ object LocalData {
             imageRes = R.drawable.map,
             location = "Costa Verde, Magdalena",
             date = "15/09/2024",
+            time = "11:00 AM",
             schedule = "11:00 AM - 9:00 PM",
             category = EventCategory.FESTIVAL,
-            price = 30.0
+            price = 30.0,
+            capacity = 10000
         ),
         Event(
             id = 3,
@@ -101,9 +105,11 @@ object LocalData {
             imageRes = R.drawable.map,
             location = "Arena Perú, Surco",
             date = "20/11/2024",
+            time = "8:00 PM",
             schedule = "8:00 PM - 11:00 PM",
             category = EventCategory.CONCERT,
-            price = 120.0
+            price = 120.0,
+            capacity = 5000
         ),
         Event(
             id = 4,
@@ -112,9 +118,11 @@ object LocalData {
             imageRes = R.drawable.map,
             location = "Parque Próceres, Jesús María",
             date = "25/10/2024",
+            time = "10:00 AM",
             schedule = "10:00 AM - 9:00 PM",
             category = EventCategory.EXHIBITION,
-            price = 0.0
+            price = 0.0,
+            capacity = 2000
         )
     )
 
@@ -125,11 +133,12 @@ object LocalData {
             name = "Central Restaurante",
             description = "Restaurante galardonado como el mejor de América Latina. Ofrece una experiencia culinaria única basada en los ingredientes y ecosistemas del Perú, desde el Pacífico hasta los Andes.",
             imageRes = R.drawable.map,
-            type = ServiceType.GASTRONOMY,
+            type = "Gastronomía",
             contact = "+51 1 242 8515",
             location = "Barranco, Lima",
-            category = GastronomyCategory.RESTAURANT,
+            category = ServiceCategory.GASTRONOMY,
             priceRange = "$$$",
+            price = 150.0,
             schedule = "12:45 PM - 3:00 PM, 7:45 PM - 10:00 PM"
         ),
         Service(
@@ -137,11 +146,12 @@ object LocalData {
             name = "Maido Restaurante",
             description = "Fusión nikkei de alta cocina. El chef Mitsuharu Tsumura combina ingredientes peruanos con técnicas japonesas para crear platos innovadores y deliciosos.",
             imageRes = R.drawable.map,
-            type = ServiceType.GASTRONOMY,
+            type = "Gastronomía",
             contact = "+51 1 446 2512",
             location = "Miraflores, Lima",
-            category = GastronomyCategory.RESTAURANT,
+            category = ServiceCategory.GASTRONOMY,
             priceRange = "$$$",
+            price = 120.0,
             schedule = "1:00 PM - 3:00 PM, 7:30 PM - 11:00 PM"
         ),
         Service(
@@ -149,11 +159,12 @@ object LocalData {
             name = "Tío Mario Anticuchos",
             description = "El mejor lugar para probar anticuchos tradicionales peruanos. Comida callejera auténtica con más de 30 años de tradición familiar.",
             imageRes = R.drawable.map,
-            type = ServiceType.GASTRONOMY,
+            type = "Gastronomía",
             contact = "+51 999 888 777",
             location = "Jesús María, Lima",
-            category = GastronomyCategory.STREET_FOOD,
+            category = ServiceCategory.GASTRONOMY,
             priceRange = "$",
+            price = 15.0,
             schedule = "6:00 PM - 12:00 AM"
         ),
         Service(
@@ -161,11 +172,12 @@ object LocalData {
             name = "Metropolitano",
             description = "Sistema de transporte rápido en buses articulados. Conecta el norte y sur de Lima con carriles exclusivos. Es la forma más rápida y segura de moverse por la ciudad.",
             imageRes = R.drawable.map,
-            type = ServiceType.TRANSPORT,
+            type = "Transporte",
             contact = "www.metropolitano.gob.pe",
             location = "Varias estaciones, Lima",
-            category = TransportCategory.BUS,
+            category = ServiceCategory.TRANSPORT,
             priceRange = "$",
+            price = 2.5,
             schedule = "5:00 AM - 10:00 PM"
         ),
         Service(
@@ -173,11 +185,12 @@ object LocalData {
             name = "Lima Airport Partners - Taxi",
             description = "Servicio oficial de taxis del Aeropuerto Jorge Chávez. Tarifas fijas, seguros y confiables para trasladarte desde el aeropuerto a cualquier punto de Lima.",
             imageRes = R.drawable.map,
-            type = ServiceType.TRANSPORT,
+            type = "Transporte",
             contact = "+51 1 517 3100",
             location = "Aeropuerto Jorge Chávez",
-            category = TransportCategory.TAXI,
+            category = ServiceCategory.TRANSPORT,
             priceRange = "$$",
+            price = 25.0,
             schedule = "24 horas"
         ),
         Service(
@@ -185,11 +198,12 @@ object LocalData {
             name = "Café del Museo",
             description = "Cafetería ubicada en el Museo Larco. Ofrece café peruano de especialidad, postres artesanales y un ambiente rodeado de jardines coloniales.",
             imageRes = R.drawable.map,
-            type = ServiceType.GASTRONOMY,
+            type = "Gastronomía",
             contact = "+51 1 462 4757",
             location = "Pueblo Libre, Lima",
-            category = GastronomyCategory.CAFE,
+            category = ServiceCategory.GASTRONOMY,
             priceRange = "$$",
+            price = 35.0,
             schedule = "9:00 AM - 10:00 PM"
         )
     )

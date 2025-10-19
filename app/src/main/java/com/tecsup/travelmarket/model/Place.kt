@@ -7,17 +7,16 @@ data class Place(
     val description: String,
     val imageRes: Int,
     val location: String,
-    val category: String,
+    val category: PlaceCategory,
     val schedule: String = "No especificado",
     val rating: Double = 0.0,
     var isFavorite: Boolean = false
 )
 
-
 //Categorías disponibles para lugares
-object PlaceCategory {
-    const val TOURIST_ATTRACTION = "Lugares"
-    const val CULTURE = "Cultura"
-    const val NATURE = "Naturaleza"
-    const val HISTORICAL = "Histórico"
+enum class PlaceCategory {
+    TOURIST_ATTRACTION,
+    CULTURE,
+    NATURE,
+    HISTORICAL
 }

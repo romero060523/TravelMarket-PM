@@ -9,33 +9,17 @@ data class Service(
     val type: String,
     val contact: String,
     val location: String,
-    val category: String,
+    val category: ServiceCategory,
     val priceRange: String = "$$",
+    val price: Double = 0.0,
     val schedule: String = "No especificado",
     var isFavorite: Boolean = false
 )
 
-
-// Tipos de servicios disponibles
-object ServiceType {
-    const val GASTRONOMY = "Gastronomía"
-    const val TRANSPORT = "Transporte"
-    const val LODGING = "Hospedaje"
-    const val TOUR = "Tours"
-}
-
-// Categoria de gastronomia
-object GastronomyCategory {
-    const val RESTAURANT = "Restaurante"
-    const val CAFE = "Café"
-    const val BAR = "Bar"
-    const val STREET_FOOD = "Comida Callejera"
-}
-
-// Categoria de transporte
-object TransportCategory {
-    const val TAXI = "Taxi"
-    const val BUS = "Bus"
-    const val TRAIN = "Tren"
-    const val RENTAL = "Alquiler"
+// Categorías de servicios disponibles
+enum class ServiceCategory {
+    GASTRONOMY,
+    TRANSPORT,
+    LODGING,
+    TOUR
 }

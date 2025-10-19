@@ -8,18 +8,19 @@ data class Event(
     val imageRes: Int,
     val location: String,
     val date: String,
+    val time: String,
     val schedule: String,
-    val category: String,
+    val category: EventCategory,
     val price: Double = 0.0,
+    val capacity: Int = 0,
     var isFavorite: Boolean = false
 )
 
-
 // Categorías disponibles para eventos
-object EventCategory {
-    const val SPORTS = "Deportes"
-    const val CONCERT = "Conciertos"
-    const val FESTIVAL = "Festivales"
-    const val CONFERENCE = "Conferencias"
-    const val EXHIBITION = "Exposiciones"
+enum class EventCategory {
+    SPORTS,
+    CONCERT,
+    FESTIVAL,
+    CONFERENCE,
+    EXHIBITION
 }

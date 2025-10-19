@@ -20,14 +20,14 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
         modifier = modifier
     ) {
         composable(Screen.Home.route) { HomeScreen(navController) }
-        composable(Screen.Favorites.route) { FavoriteScreen() }
+        composable(Screen.Favorites.route) { FavoriteScreen(navController) }
         composable(Screen.Profile.route) { ProfileScreen() }
 
         composable(
             route = "${Screen.Detail.route}/{id}",
             arguments = listOf(navArgument("id") { type = NavType.IntType })
         ) { backStackEntry ->
-            val id = backStackEntry.arguments?.getInt("id")
+            val id = backStackEntry.arguments?.getInt("id") ?: 0
             DetailScreen(placeId = id, navController = navController)
         }
 
