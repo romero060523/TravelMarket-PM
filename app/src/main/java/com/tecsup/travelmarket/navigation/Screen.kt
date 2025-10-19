@@ -1,10 +1,7 @@
 package com.tecsup.travelmarket.navigation
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Screen(
@@ -16,4 +13,10 @@ sealed class Screen(
     object Favorites : Screen("favorite", "Favoritos", Icons.Filled.Favorite)
     object Profile : Screen("profile", "Perfil", Icons.Filled.Person)
     object Detail : Screen("detail")
+    
+    // Pantallas de categorías
+    object Places : Screen("places", "Lugares", Icons.Filled.Place)
+    object Events : Screen("events", "Eventos", Icons.Filled.Event)
+    object Gastronomy : Screen("gastronomy", "Gastronomía", Icons.Filled.Restaurant)
+    object Transport : Screen("transport", "Transporte", Icons.Filled.DirectionsBus)
 }

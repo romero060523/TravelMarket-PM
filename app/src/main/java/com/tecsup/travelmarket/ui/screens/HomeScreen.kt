@@ -1,6 +1,7 @@
 package com.tecsup.travelmarket.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -18,18 +19,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tecsup.travelmarket.R
+import com.tecsup.travelmarket.data.Repository
+import com.tecsup.travelmarket.data.SearchResult
+import com.tecsup.travelmarket.model.*
 import com.tecsup.travelmarket.navigation.Screen
 import com.tecsup.travelmarket.ui.components.ItemCard
+import com.tecsup.travelmarket.ui.components.SearchBar
 import com.tecsup.travelmarket.ui.theme.*
-
-
-data class Place(
-    val id: Int,
-    val name: String,
-    val description: String,
-    val imageRes: Int,
-    val category: String
-)
 
 data class Category(
     val name: String,
@@ -41,17 +37,35 @@ data class Category(
 @Composable
 fun HomeScreen(navController: NavController) {
     var searchQuery by remember { mutableStateOf("") }
-
-    val places = listOf(
-        Place(1, "Estadio Nacional", "Sede principal de los Juegos Panamericanos con capacidad para 40,000 espectadores.", R.drawable.map, "Eventos"),
-        Place(2, "Centro Histórico de Lima", "Plaza de Armas y arquitectura colonial declarada Patrimonio de la Humanidad por...", R.drawable.map, "Lugares")
-    )
+    var showSearchResults by remember { mutableStateOf(false) }
+    val repository = remember { Repository() }
+    
+    // Obtener datos del repositorio
+    val places = repository.getAllPlaces()
+    val events = repository.getAllEvents()
+    val services = repository.getAllServices()
+    
+    // Búsqueda reactiva
+    val searchResults by remember(searchQuery) {
+        derivedStateOf {
+            if (searchQuery.isNotBlank()) {
+                repository.searchItems(searchQuery)
+            } else {
+                SearchResult(emptyList(), emptyList(), emptyList())
+            }
+        }
+    }
+    
+    // Mostrar resultados cuando hay búsqueda
+    LaunchedEffect(searchQuery) {
+        showSearchResults = searchQuery.isNotBlank() && searchResults.hasResults
+    }
 
     val categories = listOf(
-        Category("Lugares", Icons.Default.Place, TurquoiseCategory, "places"),
-        Category("Eventos", Icons.Default.Event, OrangeCategory, "events"),
-        Category("Gastronomía", Icons.Default.Restaurant, TurquoiseCategory, "gastronomy"),
-        Category("Transporte", Icons.Default.DirectionsBus, OrangeCategory, "transport")
+        Category("Lugares", Icons.Default.Place, TurquoiseCategory, Screen.Places.route),
+        Category("Eventos", Icons.Default.Event, OrangeCategory, Screen.Events.route),
+        Category("Gastronomía", Icons.Default.Restaurant, TurquoiseCategory, Screen.Gastronomy.route),
+        Category("Transporte", Icons.Default.DirectionsBus, OrangeCategory, Screen.Transport.route)
     )
 
     Column(
@@ -90,41 +104,23 @@ fun HomeScreen(navController: NavController) {
             }
         }
 
-        // Barra de búsqueda
+        // Barra de búsqueda con resultados en tiempo real
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = TurquoisePrimary,
             tonalElevation = 0.dp
         ) {
             Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White, RoundedCornerShape(8.dp)),
-                    placeholder = {
-                        Text(
-                            "Buscar lugares, eventos o servicios...",
-                            color = TextLight,
-                            fontSize = 14.sp
-                        )
-                    },
-                    leadingIcon = {
-                        Icon(
-                            Icons.Default.Search,
-                            contentDescription = "Buscar",
-                            tint = TextLight
-                        )
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(8.dp),
-                    singleLine = true
+                SearchBar(
+                    searchQuery = searchQuery,
+                    onSearchQueryChange = { searchQuery = it },
+                    onItemClick = { item ->
+                        when (item) {
+                            is Place -> navController.navigate("${Screen.Detail.route}/${item.id}")
+                            is Event -> navController.navigate("${Screen.Detail.route}/${item.id}")
+                            is Service -> navController.navigate("${Screen.Detail.route}/${item.id}")
+                        }
+                    }
                 )
             }
         }
@@ -139,80 +135,100 @@ fun HomeScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // Sección de Categorías
-            item {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Text(
-                        text = "Categorías",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+            // Mostrar resultados de búsqueda si hay query
+            if (showSearchResults) {
+                item {
+                    SearchResultsSection(
+                        searchResults = searchResults,
+                        onItemClick = { item ->
+                            when (item) {
+                                is Place -> navController.navigate("${Screen.Detail.route}/${item.id}")
+                                is Event -> navController.navigate("${Screen.Detail.route}/${item.id}")
+                                is Service -> navController.navigate("${Screen.Detail.route}/${item.id}")
+                            }
+                        }
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
-            }
+            } else {
+                // Sección de Categorías (solo si no hay búsqueda)
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Text(
+                            text = "Categorías",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
 
-            // Grid de categorías (2x2)
-            item {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                // Grid de categorías (2x2)
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
                         CategoryCard(
                             category = categories[0],
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            onClick = { navController.navigate(categories[0].route) }
                         )
                         CategoryCard(
                             category = categories[1],
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            onClick = { navController.navigate(categories[1].route) }
                         )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
                         CategoryCard(
                             category = categories[2],
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            onClick = { navController.navigate(categories[2].route) }
                         )
                         CategoryCard(
                             category = categories[3],
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
+                            onClick = { navController.navigate(categories[3].route) }
                         )
+                        }
                     }
                 }
-            }
 
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-            }
+                item {
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
 
-            // Sección de Destacados
-            item {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Text(
-                        text = "Destacados",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+                // Sección de Destacados
+                item {
+                    Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+                        Text(
+                            text = "Destacados",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
+                }
+
+                // Lista de lugares destacados
+                items(places.take(3)) { place ->
+                    ItemCard(
+                        name = place.name,
+                        description = place.description,
+                        imageRes = place.imageRes,
+                        category = place.category,
+                        onClick = {
+                            navController.navigate("${Screen.Detail.route}/${place.id}")
+                        }
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
-            }
-
-            // Lista de lugares destacados
-            items(places) { place ->
-                ItemCard(
-                    name = place.name,
-                    description = place.description,
-                    imageRes = place.imageRes,
-                    category = place.category,
-                    onClick = {
-                        navController.navigate("${Screen.Detail.route}/${place.id}")
-                    }
-                )
             }
 
             item {
@@ -222,14 +238,127 @@ fun HomeScreen(navController: NavController) {
     }
 }
 
+/**
+ * Sección que muestra los resultados de búsqueda
+ */
+@Composable
+fun SearchResultsSection(
+    searchResults: SearchResult,
+    onItemClick: (Any) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier.padding(horizontal = 16.dp)) {
+        Text(
+            text = "Resultados de búsqueda (${searchResults.totalResults})",
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            color = TextPrimary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        
+        // Lugares encontrados
+        if (searchResults.places.isNotEmpty()) {
+            Text(
+                text = "Lugares (${searchResults.places.size})",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextSecondary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            searchResults.places.forEach { place ->
+                ItemCard(
+                    name = place.name,
+                    description = place.description,
+                    imageRes = place.imageRes,
+                    category = place.category,
+                    onClick = { onItemClick(place) }
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        
+        // Eventos encontrados
+        if (searchResults.events.isNotEmpty()) {
+            Text(
+                text = "Eventos (${searchResults.events.size})",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextSecondary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            searchResults.events.forEach { event ->
+                ItemCard(
+                    name = event.name,
+                    description = event.description,
+                    imageRes = event.imageRes,
+                    category = event.category,
+                    onClick = { onItemClick(event) }
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
+        
+        // Servicios encontrados
+        if (searchResults.services.isNotEmpty()) {
+            Text(
+                text = "Servicios (${searchResults.services.size})",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = TextSecondary,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+            searchResults.services.forEach { service ->
+                ItemCard(
+                    name = service.name,
+                    description = service.description,
+                    imageRes = service.imageRes,
+                    category = service.type,
+                    onClick = { onItemClick(service) }
+                )
+            }
+        }
+        
+        // Si no hay resultados
+        if (!searchResults.hasResults) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Icon(
+                    Icons.Default.SearchOff,
+                    contentDescription = "Sin resultados",
+                    tint = TextLight,
+                    modifier = Modifier.size(48.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "No se encontraron resultados",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextSecondary
+                )
+                Text(
+                    text = "Intenta con otros términos de búsqueda",
+                    fontSize = 14.sp,
+                    color = TextLight
+                )
+            }
+        }
+    }
+}
+
 @Composable
 fun CategoryCard(
     category: Category,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit = {}
 ) {
     Card(
         modifier = modifier
-            .height(100.dp),
+            .height(100.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = category.color
