@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 
 // Colores principales del diseño TravelMarket
 val TurquoisePrimary = Color(0xFF4DB8C4) // Color principal - Turquesa
+val OrangePrimary = Color(0xFFFF9F43) // Color principal - Naranja
 val OrangeSecondary = Color(0xFFFF9F43) // Color secundario - Naranja
 val BlueAccent = Color(0xFF0B5D9E) // Azul oscuro para detalles
 
