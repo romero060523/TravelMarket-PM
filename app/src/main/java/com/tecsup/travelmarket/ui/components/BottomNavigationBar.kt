@@ -21,8 +21,19 @@ fun BottomNavigationBar(
 
         items.forEach { screen ->
             NavigationBarItem(
-                icon = { screen.icon?.let { Icon(it, contentDescription = screen.title) } },
-                label = { screen.title?.let { Text(it) } },
+                icon = {
+                    screen.icon?.let {
+                        Icon(
+                            it,
+                            contentDescription = screen.title)
+                    } },
+                label = {
+                    screen.title?.let {
+                        Text(
+                            it,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    } },
                 selected = currentDestination == screen.route,
                 onClick = {
                     if (currentDestination != screen.route) {
@@ -33,10 +44,11 @@ fun BottomNavigationBar(
                     }
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    selectedIconColor = Color(0xFF007AFF), // Azul activo
-                    unselectedIconColor = Color.Gray,
-                    selectedTextColor = Color(0xFF007AFF),
-                    unselectedTextColor = Color.Gray
+                    selectedIconColor = Color(0xFF4DB8C4), // Azul activo
+                    unselectedIconColor = Color(0xFF9E9E9E),
+                    selectedTextColor = Color(0xFF4DB8C4),
+                    unselectedTextColor = Color(0xFF9E9E9E),
+                    indicatorColor = Color.Transparent
                 )
             )
         }

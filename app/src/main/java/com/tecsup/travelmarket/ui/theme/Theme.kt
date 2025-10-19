@@ -1,3 +1,4 @@
+
 package com.tecsup.travelmarket.ui.theme
 
 import android.app.Activity
@@ -16,21 +17,35 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = TurquoisePrimary,
+    secondary = OrangeSecondary,
+    tertiary = BlueAccent,
+    background = BackgroundGray,
+    surface = BackgroundWhite,
+    onPrimary = BackgroundWhite,
+    onSecondary = BackgroundWhite,
+    onBackground = TextPrimary,
+    onSurface = TextPrimary
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = TurquoisePrimary,
+    secondary = OrangeSecondary,
+    tertiary = BlueAccent,
+    background = BackgroundWhite,
+    surface = BackgroundWhite,
+    onPrimary = BackgroundWhite,
+    onSecondary = BackgroundWhite,
+    onBackground = TextPrimary,
+    onSurface = TextPrimary,
+    surfaceVariant = BackgroundGray,
+    onSurfaceVariant = TextSecondary
 )
 
 @Composable
 fun TravelMarketTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // Cambiado a false para usar nuestros colores personalizados
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -38,16 +53,16 @@ fun TravelMarketTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
-            window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = darkTheme
+            window.statusBarColor = TurquoisePrimary.toArgb()
+            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
         }
     }
 
