@@ -1,34 +1,44 @@
 package com.tecsup.travelmarket.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tecsup.travelmarket.R
+import com.tecsup.travelmarket.ui.theme.*
 
-/**
- * Pantalla de detalle que muestra información completa de un lugar o evento
- * Backend básico sin estilos personalizados
- */
+data class PlaceDetail(
+    val name: String,
+    val description: String,
+    val imageRes: Int,
+    val location: String,
+    val schedule: String,
+    val category: String
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(placeId: Int?, navController: NavController) {
-    // Estado para controlar si el lugar está en favoritos
     var isFavorite by remember { mutableStateOf(false) }
-    
-    // Datos del lugar según el ID
+
     val placeData = when (placeId) {
         1 -> PlaceDetail(
             name = "Estadio Nacional",
@@ -64,185 +74,247 @@ fun DetailScreen(placeId: Int?, navController: NavController) {
         )
     }
 
-    // Scaffold principal
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(placeData.name) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver atrás")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { isFavorite = !isFavorite }) {
-                        Icon(
-                            Icons.Default.Favorite,
-                            contentDescription = "Favorito"
-                        )
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            // Imagen del lugar
-            Image(
-                painter = painterResource(id = placeData.imageRes),
-                contentDescription = "Imagen de ${placeData.name}",
+            // Imagen principal con overlay
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp),
-                contentScale = ContentScale.Crop
-            )
-            
-            // Contenido de información
-            Column(
-                modifier = Modifier.padding(16.dp)
+                    .height(280.dp)
             ) {
-                // Título y categoría
+                Image(
+                    painter = painterResource(id = placeData.imageRes),
+                    contentDescription = "Imagen de ${placeData.name}",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+
+                // Botones flotantes sobre la imagen
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    // Botón de volver
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color.White, CircleShape)
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = BlueAccent
+                        )
+                    }
+
+                    // Botón de favorito
+                    IconButton(
+                        onClick = { isFavorite = !isFavorite },
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(Color.White, CircleShape)
+                    ) {
+                        Icon(
+                            if (isFavorite) Icons.Filled.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = "Favorito",
+                            tint = if (isFavorite) Color.Red else BlueAccent
+                        )
+                    }
+                }
+            }
+
+            // Contenido principal
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(BackgroundWhite)
+                    .padding(20.dp)
+            ) {
+                // Título y badge de categoría
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Top
                 ) {
                     Text(
                         text = placeData.name,
-                        style = MaterialTheme.typography.headlineMedium
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary,
+                        modifier = Modifier.weight(1f)
                     )
-                    Text(
-                        text = placeData.category,
-                        style = MaterialTheme.typography.labelMedium
-                    )
+
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = TurquoisePrimary
+                    ) {
+                        Text(
+                            text = placeData.category,
+                            color = Color.White,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                        )
+                    }
                 }
-                
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Descripción
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // Sección Descripción
                 Text(
                     text = "Descripción",
-                    style = MaterialTheme.typography.titleMedium
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
                 )
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 Text(
                     text = placeData.description,
-                    style = MaterialTheme.typography.bodyLarge
+                    fontSize = 14.sp,
+                    color = TextSecondary,
+                    lineHeight = 22.sp
                 )
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
-                // Tarjeta de horario
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.LocationOn,
-                            contentDescription = "Horario"
-                        )
-                        
-                        Spacer(modifier = Modifier.width(16.dp))
-                        
-                        Column {
-                            Text(
-                                text = "Horario",
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                            Text(
-                                text = placeData.schedule,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
-                
-                // Tarjeta de ubicación
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            Icons.Default.LocationOn,
-                            contentDescription = "Ubicación"
-                        )
-                        
-                        Spacer(modifier = Modifier.width(16.dp))
-                        
-                        Column {
-                            Text(
-                                text = "Ubicación",
-                                style = MaterialTheme.typography.titleSmall
-                            )
-                            Text(
-                                text = placeData.location,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                        }
-                    }
-                }
-                
+
+                // Card de Horario
+                InfoCard(
+                    icon = Icons.Default.AccessTime,
+                    title = "Horario",
+                    content = placeData.schedule,
+                    iconColor = TurquoisePrimary
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Card de Ubicación
+                InfoCard(
+                    icon = Icons.Default.LocationOn,
+                    title = "Ubicación",
+                    content = placeData.location,
+                    iconColor = OrangeSecondary
+                )
+
                 Spacer(modifier = Modifier.height(32.dp))
-                
-                // Botones de acción
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+
+                // Botón de acción principal
+                Button(
+                    onClick = { isFavorite = !isFavorite },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TurquoisePrimary
+                    ),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    // Botón de favoritos
-                    Button(
-                        onClick = { isFavorite = !isFavorite },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Icon(
-                            Icons.Default.Favorite,
-                            contentDescription = "Favorito"
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = if (isFavorite) "En favoritos" else "Guardar en favoritos"
-                        )
-                    }
-                    
-                    // Botón de volver al inicio
-                    OutlinedButton(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Volver al inicio")
-                    }
+                    Icon(
+                        imageVector = Icons.Default.FavoriteBorder,
+                        contentDescription = null,
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Guardar en favoritos",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
-                
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Botón secundario
+                OutlinedButton(
+                    onClick = { navController.popBackStack() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = TextPrimary
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = "Volver al inicio",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
     }
 }
 
-/**
- * Data class para representar los detalles de un lugar
- */
-data class PlaceDetail(
-    val name: String,
-    val description: String,
-    val imageRes: Int,
-    val location: String,
-    val schedule: String,
-    val category: String
-)
+@Composable
+fun InfoCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    content: String,
+    iconColor: Color
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = BackgroundGray
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Icono con fondo circular
+            Surface(
+                shape = CircleShape,
+                color = iconColor.copy(alpha = 0.1f),
+                modifier = Modifier.size(44.dp)
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = title,
+                        tint = iconColor,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            // Contenido de texto
+            Column {
+                Text(
+                    text = title,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = TextPrimary
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = content,
+                    fontSize = 13.sp,
+                    color = TextSecondary,
+                    lineHeight = 18.sp
+                )
+            }
+        }
+    }
+}
