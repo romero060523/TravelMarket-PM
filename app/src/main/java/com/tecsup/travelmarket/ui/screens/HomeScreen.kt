@@ -1,10 +1,14 @@
 package com.tecsup.travelmarket.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -14,248 +18,631 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.tecsup.travelmarket.R
+import com.tecsup.travelmarket.data.TravelViewModel
+import com.tecsup.travelmarket.model.*
 import com.tecsup.travelmarket.navigation.Screen
 import com.tecsup.travelmarket.ui.components.ItemCard
+import com.tecsup.travelmarket.ui.components.SearchBar
+import com.tecsup.travelmarket.ui.components.ErrorView
+import com.tecsup.travelmarket.ui.components.LoadingView
+import com.tecsup.travelmarket.ui.components.EmptyView
 import com.tecsup.travelmarket.ui.theme.*
 
-
-data class Place(
-    val id: Int,
-    val name: String,
-    val description: String,
-    val imageRes: Int,
-    val category: String
-)
-
-data class Category(
-    val name: String,
-    val icon: ImageVector,
-    val color: Color,
-    val route: String
-)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
-    var searchQuery by remember { mutableStateOf("") }
+fun HomeScreen(
+    navController: NavController,
+    viewModel: TravelViewModel = viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { 
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Logo circular
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .background(
+                                    Color.White,
+                                    RoundedCornerShape(8.dp)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Place,
+                                contentDescription = "Logo",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
 
-    val places = listOf(
-        Place(1, "Estadio Nacional", "Sede principal de los Juegos Panamericanos con capacidad para 40,000 espectadores.", R.drawable.map, "Eventos"),
-        Place(2, "Centro Histórico de Lima", "Plaza de Armas y arquitectura colonial declarada Patrimonio de la Humanidad por...", R.drawable.map, "Lugares")
-    )
+                        Spacer(modifier = Modifier.width(12.dp))
 
-    val categories = listOf(
-        Category("Lugares", Icons.Default.Place, TurquoiseCategory, "places"),
-        Category("Eventos", Icons.Default.Event, OrangeCategory, "events"),
-        Category("Gastronomía", Icons.Default.Restaurant, TurquoiseCategory, "gastronomy"),
-        Category("Transporte", Icons.Default.DirectionsBus, OrangeCategory, "transport")
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(BackgroundWhite)
-    ) {
-        // Header con logo y perfil
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = TurquoisePrimary,
-            tonalElevation = 0.dp
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Place,
-                        contentDescription = "Logo",
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "TravelMarket",
-                        color = Color.White,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            }
-        }
-
-        // Barra de búsqueda
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = TurquoisePrimary,
-            tonalElevation = 0.dp
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { searchQuery = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color.White, RoundedCornerShape(8.dp)),
-                    placeholder = {
                         Text(
-                            "Buscar lugares, eventos o servicios...",
-                            color = TextLight,
-                            fontSize = 14.sp
+                            text = "TravelMarket",
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
                         )
-                    },
-                    leadingIcon = {
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                ),
+                actions = {
+                        IconButton(onClick = { navController.navigate("/search") }) {
                         Icon(
                             Icons.Default.Search,
                             contentDescription = "Buscar",
-                            tint = TextLight
+                            tint = Color.White
                         )
-                    },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color.White,
-                        unfocusedContainerColor = Color.White,
-                        focusedBorderColor = Color.Transparent,
-                        unfocusedBorderColor = Color.Transparent
-                    ),
-                    shape = RoundedCornerShape(8.dp),
-                    singleLine = true
+                    }
+                }
+            )
+        },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = true,
+                    onClick = { }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Place, contentDescription = "Lugares") },
+                    label = { Text("Lugares") },
+                    selected = false,
+                    onClick = { navController.navigate("/places") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Event, contentDescription = "Eventos") },
+                    label = { Text("Eventos") },
+                    selected = false,
+                    onClick = { navController.navigate("/events") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.RoomService, contentDescription = "Servicios") },
+                    label = { Text("Servicios") },
+                    selected = false,
+                    onClick = { navController.navigate("/services") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = false,
+                    onClick = { navController.navigate("/profile") }
                 )
             }
         }
-
-        // Contenido principal con scroll
-        LazyColumn(
+    ) { innerPadding ->
+        Column(
             modifier = Modifier
+                .padding(innerPadding)
                 .fillMaxSize()
-                .background(BackgroundGray)
+                .verticalScroll(rememberScrollState())
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
+            // Search Bar
+            Spacer(modifier = Modifier.height(16.dp))
+            SearchBar(
+                query = uiState.searchQuery,
+                onQueryChange = { viewModel.searchPlaces(it) },
+                onSearch = { /* Handled by filtering */ },
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
 
-            // Sección de Categorías
-            item {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Text(
-                        text = "Categorías",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
+            // Categories
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Categorías",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(horizontal = 16.dp)
+            ) {
+                items(getCategoryItems()) { category ->
+                    CategoryCard(
+                        category = category,
+                        isSelected = uiState.selectedCategory?.name == category.name,
+                        onClick = { 
+                            val placeCategory = when(category.name) {
+                                "Lugares" -> PlaceCategory.TOURIST_ATTRACTION
+                                "Eventos" -> PlaceCategory.TOURIST_ATTRACTION
+                                "Gastronomía" -> PlaceCategory.TOURIST_ATTRACTION
+                                "Transporte" -> PlaceCategory.TOURIST_ATTRACTION
+                                else -> null
+                            }
+                            viewModel.filterPlacesByCategory(placeCategory)
+                        }
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
 
-            // Grid de categorías (2x2)
-            item {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        CategoryCard(
-                            category = categories[0],
-                            modifier = Modifier.weight(1f)
-                        )
-                        CategoryCard(
-                            category = categories[1],
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        CategoryCard(
-                            category = categories[2],
-                            modifier = Modifier.weight(1f)
-                        )
-                        CategoryCard(
-                            category = categories[3],
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-
-            item {
-                Spacer(modifier = Modifier.height(24.dp))
-            }
-
-            // Sección de Destacados
-            item {
-                Column(modifier = Modifier.padding(horizontal = 16.dp)) {
-                    Text(
-                        text = "Destacados",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = TextPrimary
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                }
-            }
-
-            // Lista de lugares destacados
-            items(places) { place ->
-                ItemCard(
-                    name = place.name,
-                    description = place.description,
-                    imageRes = place.imageRes,
-                    category = place.category,
-                    onClick = {
-                        navController.navigate("${Screen.Detail.route}/${place.id}")
-                    }
+            // Featured Places
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Lugares Destacados",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            if (uiState.isLoading) {
+                LoadingView(message = "Cargando lugares...")
+            } else if (uiState.error != null) {
+                ErrorView(
+                    message = uiState.error ?: "Error desconocido",
+                    onRetry = { viewModel.loadInitialData() }
                 )
+            } else if (uiState.filteredPlaces.isEmpty()) {
+                EmptyView(message = "No hay lugares disponibles")
+            } else {
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 400.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    items(uiState.filteredPlaces.take(3)) { place ->
+                        PlaceCard(
+                            place = place,
+                            isFavorite = viewModel.isPlaceFavorite(place.id),
+                            onItemClick = { placeId ->
+                                navController.navigate("/place_detail/$placeId")
+                            },
+                            onFavoriteClick = { placeId ->
+                                viewModel.togglePlaceFavorite(placeId)
+                            }
+                        )
+                    }
+                }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
+            // Featured Events
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Eventos Próximos",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            if (uiState.filteredEvents.isEmpty()) {
+                EmptyView(message = "No hay eventos disponibles")
+            } else {
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 400.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    items(uiState.filteredEvents.take(3)) { event ->
+                        EventCard(
+                            event = event,
+                            isFavorite = viewModel.isEventFavorite(event.id),
+                            onItemClick = { eventId ->
+                                navController.navigate("/event_detail/$eventId")
+                            },
+                            onFavoriteClick = { eventId ->
+                                viewModel.toggleEventFavorite(eventId)
+                            }
+                        )
+                    }
+                }
             }
+
+            // Featured Services
+            Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Servicios Útiles",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            if (uiState.filteredServices.isEmpty()) {
+                EmptyView(message = "No hay servicios disponibles")
+            } else {
+                LazyColumn(
+                    modifier = Modifier.heightIn(max = 400.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp)
+                ) {
+                    items(uiState.filteredServices.take(3)) { service ->
+                        ServiceCard(
+                            service = service,
+                            isFavorite = viewModel.isServiceFavorite(service.id),
+                            onItemClick = { serviceId ->
+                                navController.navigate("/service_detail/$serviceId")
+                            },
+                            onFavoriteClick = { serviceId ->
+                                viewModel.toggleServiceFavorite(serviceId)
+                            }
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 }
 
 @Composable
 fun CategoryCard(
-    category: Category,
-    modifier: Modifier = Modifier
+    category: CategoryItem,
+    isSelected: Boolean = false,
+    onClick: () -> Unit
 ) {
     Card(
-        modifier = modifier
-            .height(100.dp),
+        modifier = Modifier
+            .size(120.dp)
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = category.color
+            containerColor = if (isSelected) {
+                category.color.copy(alpha = 0.8f)
+            } else {
+                category.color
+            }
         ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = if (isSelected) 8.dp else 4.dp
+        )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.Start
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             Icon(
                 imageVector = category.icon,
                 contentDescription = category.name,
                 tint = Color.White,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(40.dp)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = category.name,
                 color = Color.White,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
             )
         }
     }
 }
+
+@Composable
+fun PlaceCard(
+    place: Place,
+    isFavorite: Boolean,
+    onItemClick: (Int) -> Unit,
+    onFavoriteClick: (Int) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onItemClick(place.id) },
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = place.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = place.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = place.location,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                
+                IconButton(
+                    onClick = { onFavoriteClick(place.id) }
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+                        tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Tag de categoría
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = TravelMarketOrange
+                    ),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Text(
+                        text = place.category.name,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Color.White,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                    )
+                }
+                
+                // Rating
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = "Rating",
+                        tint = MaterialTheme.colorScheme.tertiary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = place.rating.toString(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun EventCard(
+    event: Event,
+    isFavorite: Boolean,
+    onItemClick: (Int) -> Unit,
+    onFavoriteClick: (Int) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onItemClick(event.id) },
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = event.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = event.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = event.location,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                
+                IconButton(
+                    onClick = { onFavoriteClick(event.id) }
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+                        tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Fecha del evento
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Schedule,
+                        contentDescription = "Fecha",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = event.date,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                // Capacidad
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.People,
+                        contentDescription = "Capacidad",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = "${event.capacity} personas",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ServiceCard(
+    service: Service,
+    isFavorite: Boolean,
+    onItemClick: (Int) -> Unit,
+    onFavoriteClick: (Int) -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onItemClick(service.id) },
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Top
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        text = service.name,
+                        style = MaterialTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = service.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = service.location,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                
+                IconButton(
+                    onClick = { onFavoriteClick(service.id) }
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = if (isFavorite) "Quitar de favoritos" else "Agregar a favoritos",
+                        tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Precio
+                Text(
+                    text = "Desde $${service.price}",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                
+                // Contacto
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Phone,
+                        contentDescription = "Contacto",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = service.contact,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+}
+
+data class CategoryItem(
+    val name: String,
+    val icon: ImageVector,
+    val color: Color,
+    val route: String
+)
+
+fun getCategoryItems(): List<CategoryItem> = listOf(
+    CategoryItem("Lugares", Icons.Default.Place, TravelMarketTeal, "/places"),
+    CategoryItem("Eventos", Icons.Default.Event, TravelMarketOrange, "/events"),
+    CategoryItem("Gastronomía", Icons.Default.Restaurant, TravelMarketTeal, "/places"),
+    CategoryItem("Transporte", Icons.Default.DirectionsBus, TravelMarketOrange, "/services")
+)
