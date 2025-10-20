@@ -80,7 +80,7 @@ fun GastronomyScreen(navController: NavController) {
                     imageRes = service.imageRes,
                     category = service.category,
                     onClick = {
-                        navController.navigate("${Screen.Detail.route}/${service.id}")
+                        navController.navigate("${Screen.Detail.route}/service/${service.id}")
                     }
                 )
             }

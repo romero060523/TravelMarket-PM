@@ -396,7 +396,7 @@ fun PlacesScreen(navController: NavController) {
                     place = place,
                     imageUrl = imageUrls[place.id],
                     onClick = {
-                        navController.navigate("detail/${place.id}")
+                        navController.navigate("${Screen.Detail.route}/place/${place.id}")
                     }
                 )
             }
