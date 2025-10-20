@@ -80,7 +80,7 @@ fun EventsScreen(navController: NavController) {
                     imageRes = event.imageRes,
                     category = event.category,
                     onClick = {
-                        navController.navigate("${Screen.Detail.route}/${event.id}")
+                        navController.navigate("${Screen.Detail.route}/event/${event.id}")
                     }
                 )
             }

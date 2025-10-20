@@ -80,7 +80,7 @@ fun PlacesScreen(navController: NavController) {
                     imageRes = place.imageRes,
                     category = place.category,
                     onClick = {
-                        navController.navigate("${Screen.Detail.route}/${place.id}")
+                        navController.navigate("${Screen.Detail.route}/place/${place.id}")
                     }
                 )
             }

@@ -23,6 +23,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tecsup.travelmarket.R
+import com.tecsup.travelmarket.data.RepositoryProvider
+import com.tecsup.travelmarket.model.Event
+import com.tecsup.travelmarket.model.Place
+import com.tecsup.travelmarket.model.Service
 import com.tecsup.travelmarket.ui.theme.*
 
 data class PlaceDetail(
@@ -36,33 +40,44 @@ data class PlaceDetail(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(placeId: Int?, navController: NavController) {
+fun DetailScreen(placeId: Int?, navController: NavController, type: String? = null) {
     var isFavorite by remember { mutableStateOf(false) }
 
-    val placeData = when (placeId) {
-        1 -> PlaceDetail(
-            name = "Estadio Nacional",
-            description = "El Estadio Nacional de Lima es la sede principal de los Juegos Panamericanos. Este moderno complejo deportivo cuenta con instalaciones de última generación y ha sido renovado completamente para albergar las competiciones más importantes del evento. Aquí se llevarán a cabo las ceremonias de apertura y clausura, además de las competencias de atletismo.",
-            imageRes = R.drawable.map,
-            location = "Av. José Díaz, Cercado de Lima, Perú",
-            schedule = "Eventos diarios de 9:00 AM - 10:00 PM",
-            category = "Eventos"
+    // Cargar desde el Repository cualquier tipo por id
+    val repository = RepositoryProvider.repository
+    val placeData: PlaceDetail = when (val it = placeId?.let { theId ->
+        when (type) {
+            "place" -> repository.getAllPlaces().find { p -> p.id == theId }
+            "event" -> repository.getAllEvents().find { e -> e.id == theId }
+            "service" -> repository.getAllServices().find { s -> s.id == theId }
+            else -> repository.getAllPlaces().find { p -> p.id == theId }
+                ?: repository.getAllEvents().find { e -> e.id == theId }
+                ?: repository.getAllServices().find { s -> s.id == theId }
+        }
+    }) {
+        is Place -> PlaceDetail(
+            name = it.name,
+            description = it.description,
+            imageRes = it.imageRes,
+            location = it.location,
+            schedule = it.schedule,
+            category = it.category
         )
-        2 -> PlaceDetail(
-            name = "Parque Kennedy",
-            description = "El Parque Kennedy es uno de los espacios públicos más emblemáticos de Miraflores, Lima. Famoso por su gastronomía, vida nocturna y ambiente bohemio. Es el lugar perfecto para disfrutar de la comida peruana, especialmente los anticuchos y picarones, mientras se disfruta del ambiente cultural y artístico del lugar.",
-            imageRes = R.drawable.map,
-            location = "Miraflores, Lima",
-            schedule = "Abierto 24 horas",
-            category = "Gastronomía"
+        is Event -> PlaceDetail(
+            name = it.name,
+            description = it.description,
+            imageRes = it.imageRes,
+            location = it.location,
+            schedule = it.date, // mostramos la fecha como "horario"
+            category = it.category
         )
-        3 -> PlaceDetail(
-            name = "Museo Larco",
-            description = "El Museo Larco es uno de los museos más importantes de América Latina, ubicado en Lima, Perú. Alberga una de las colecciones arqueológicas precolombinas más destacadas del mundo, con más de 45,000 piezas que abarcan 5,000 años de historia peruana. El museo es famoso por su galería de arte erótico precolombino y sus hermosos jardines.",
-            imageRes = R.drawable.map,
-            location = "Pueblo Libre, Lima",
-            schedule = "9:00 AM - 10:00 PM",
-            category = "Cultura"
+        is Service -> PlaceDetail(
+            name = it.name,
+            description = it.description,
+            imageRes = it.imageRes,
+            location = it.location,
+            schedule = it.schedule,
+            category = it.category
         )
         else -> PlaceDetail(
             name = "Lugar no encontrado",
