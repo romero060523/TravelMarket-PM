@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.tecsup.travelmarket.R
 import com.tecsup.travelmarket.data.RepositoryProvider
 import com.tecsup.travelmarket.model.Event
@@ -33,6 +34,7 @@ data class PlaceDetail(
     val name: String,
     val description: String,
     val imageRes: Int,
+    val imageUrl: String? = null,
     val location: String,
     val schedule: String,
     val category: String
@@ -83,6 +85,7 @@ fun DetailScreen(placeId: Int?, navController: NavController, type: String? = nu
             name = "Lugar no encontrado",
             description = "No se encontró información para este lugar.",
             imageRes = R.drawable.map,
+            imageUrl = null,
             location = "Ubicación desconocida",
             schedule = "No disponible",
             category = "N/A"
@@ -101,12 +104,23 @@ fun DetailScreen(placeId: Int?, navController: NavController, type: String? = nu
                     .fillMaxWidth()
                     .height(280.dp)
             ) {
-                Image(
-                    painter = painterResource(id = placeData.imageRes),
-                    contentDescription = "Imagen de ${placeData.name}",
-                    modifier = Modifier.fillMaxSize(),
-                    contentScale = ContentScale.Crop
-                )
+                if (placeData.imageUrl != null) {
+                    AsyncImage(
+                        model = placeData.imageUrl,
+                        contentDescription = "Imagen de ${placeData.name}",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop,
+                        error = painterResource(id = placeData.imageRes),
+                        placeholder = painterResource(id = placeData.imageRes)
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(id = placeData.imageRes),
+                        contentDescription = "Imagen de ${placeData.name}",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }
 
                 // Botones flotantes sobre la imagen
                 Row(
