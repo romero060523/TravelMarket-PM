@@ -34,11 +34,15 @@ fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
         composable(Screen.Transport.route) { TransportScreen(navController) }
 
         composable(
-            route = "${Screen.Detail.route}/{id}",
-            arguments = listOf(navArgument("id") { type = NavType.IntType })
+            route = "${Screen.Detail.route}/{type}/{id}",
+            arguments = listOf(
+                navArgument("type") { type = NavType.StringType },
+                navArgument("id") { type = NavType.IntType }
+            )
         ) { backStackEntry ->
             val id = backStackEntry.arguments?.getInt("id")
-            DetailScreen(placeId = id, navController = navController)
+            val type = backStackEntry.arguments?.getString("type")
+            DetailScreen(placeId = id, navController = navController, type = type)
         }
 
     }

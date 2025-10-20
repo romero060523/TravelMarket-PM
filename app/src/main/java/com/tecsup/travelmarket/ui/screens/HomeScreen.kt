@@ -116,9 +116,9 @@ fun HomeScreen(navController: NavController) {
                     onSearchQueryChange = { searchQuery = it },
                     onItemClick = { item ->
                         when (item) {
-                            is Place -> navController.navigate("${Screen.Detail.route}/${item.id}")
-                            is Event -> navController.navigate("${Screen.Detail.route}/${item.id}")
-                            is Service -> navController.navigate("${Screen.Detail.route}/${item.id}")
+                            is Place -> navController.navigate("${Screen.Detail.route}/place/${item.id}")
+                            is Event -> navController.navigate("${Screen.Detail.route}/event/${item.id}")
+                            is Service -> navController.navigate("${Screen.Detail.route}/service/${item.id}")
                         }
                     }
                 )
@@ -142,9 +142,9 @@ fun HomeScreen(navController: NavController) {
                         searchResults = searchResults,
                         onItemClick = { item ->
                             when (item) {
-                                is Place -> navController.navigate("${Screen.Detail.route}/${item.id}")
-                                is Event -> navController.navigate("${Screen.Detail.route}/${item.id}")
-                                is Service -> navController.navigate("${Screen.Detail.route}/${item.id}")
+                                is Place -> navController.navigate("${Screen.Detail.route}/place/${item.id}")
+                                is Event -> navController.navigate("${Screen.Detail.route}/event/${item.id}")
+                                is Service -> navController.navigate("${Screen.Detail.route}/service/${item.id}")
                             }
                         }
                     )
@@ -225,7 +225,7 @@ fun HomeScreen(navController: NavController) {
                         imageRes = place.imageRes,
                         category = place.category,
                         onClick = {
-                            navController.navigate("${Screen.Detail.route}/${place.id}")
+                            navController.navigate("${Screen.Detail.route}/place/${place.id}")
                         }
                     )
                 }
