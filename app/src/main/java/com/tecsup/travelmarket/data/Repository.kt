@@ -249,6 +249,24 @@ class Repository {
     fun getCurrentUser(): User {
         return LocalData.currentUser
     }
+
+    // ==================== ESTADÍSTICAS ====================
+
+    /**
+     * Obtener número total de favoritos
+     */
+    fun getTotalFavoritesCount(): Int {
+        return getFavoritePlaces().size +
+                getFavoriteEvents().size +
+                getFavoriteServices().size
+    }
+
+    /**
+     * Verificar si hay favoritos
+     */
+    fun hasFavorites(): Boolean {
+        return getTotalFavoritesCount() > 0
+    }
 }
 
 /**
