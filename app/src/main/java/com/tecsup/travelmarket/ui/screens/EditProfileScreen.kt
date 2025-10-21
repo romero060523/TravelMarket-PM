@@ -25,10 +25,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tecsup.travelmarket.data.AuthRepositoryProvider
 import com.tecsup.travelmarket.ui.theme.*
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
-
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,22 +36,18 @@ fun EditProfileScreen(navController: NavController) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
     val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     var name by remember { mutableStateOf(user?.name ?: "") }
     var email by remember { mutableStateOf(user?.email ?: "") }
     var isLoading by remember { mutableStateOf(false) }
     var showSuccessSnackbar by remember { mutableStateOf(false) }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-
-    Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
-    ) { paddingValues ->
+    Box(modifier = Modifier.fillMaxSize()) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(BackgroundWhite)
-                .padding(paddingValues)
         ) {
             // Header con fondo turquesa
             Surface(
@@ -64,12 +58,11 @@ fun EditProfileScreen(navController: NavController) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp),
+                        .padding(6.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier.size(40.dp)
+                        onClick = { navController.popBackStack() }
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
@@ -278,7 +271,6 @@ fun EditProfileScreen(navController: NavController) {
                     onClick = {
                         keyboardController?.hide()
 
-                        // Validaciones básicas
                         when {
                             name.isBlank() -> {
                                 coroutineScope.launch {
@@ -299,7 +291,6 @@ fun EditProfileScreen(navController: NavController) {
                             else -> {
                                 isLoading = true
 
-                                // Intentar actualizar el perfil
                                 val result = authRepository.updateUserProfile(name.trim(), email.trim())
 
                                 when (result) {
@@ -307,9 +298,8 @@ fun EditProfileScreen(navController: NavController) {
                                         isLoading = false
                                         showSuccessSnackbar = true
 
-                                        // Volver atrás de forma segura
                                         coroutineScope.launch {
-                                            kotlinx.coroutines.delay(500)
+                                            delay(500)
                                             navController.popBackStack()
                                         }
                                     }
@@ -367,9 +357,17 @@ fun EditProfileScreen(navController: NavController) {
                     )
                 }
 
-                Spacer(modifier = Modifier.height(80.dp)) // Espacio para BottomNav
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
+
+        // ✅ Snackbar flotante en la parte inferior
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(16.dp)
+        )
     }
 
     // Mostrar Snackbar de éxito
