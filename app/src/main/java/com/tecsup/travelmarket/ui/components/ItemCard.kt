@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.tecsup.travelmarket.ui.theme.*
 
 @Composable
@@ -26,6 +27,7 @@ fun ItemCard(
     description: String,
     imageRes: Int,
     category: String,
+    imageUrl: String? = null,
     onClick: () -> Unit
 ) {
     Card(
@@ -44,15 +46,28 @@ fun ItemCard(
                 .fillMaxWidth()
                 .padding(12.dp)
         ) {
-            // Imagen del lugar
-            Image(
-                painter = painterResource(id = imageRes),
-                contentDescription = name,
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop
-            )
+            // Imagen del lugar (URL si existe, sino recurso local)
+            if (imageUrl != null) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = name,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop,
+                    error = painterResource(id = imageRes),
+                    placeholder = painterResource(id = imageRes)
+                )
+            } else {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = name,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(12.dp)),
+                    contentScale = ContentScale.Crop
+                )
+            }
 
             Spacer(modifier = Modifier.width(12.dp))
 

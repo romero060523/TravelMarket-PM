@@ -9,9 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.tecsup.travelmarket.data.AuthRepositoryProvider
+import com.tecsup.travelmarket.data.TravelViewModel
 import com.tecsup.travelmarket.navigation.NavGraph
 import com.tecsup.travelmarket.navigation.Screen
 import com.tecsup.travelmarket.ui.components.BottomNavigationBar
@@ -24,28 +30,54 @@ class MainActivity : ComponentActivity() {
         setContent {
             TravelMarketTheme {
                 val navController = rememberNavController()
-                val items = listOf(
+                val authRepository = remember { AuthRepositoryProvider.authRepository }
+
+                // ✅ Crear ViewModel una sola vez
+                val viewModel: TravelViewModel = viewModel()
+
+                // Observar la ruta actual
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+
+                // Definir rutas que deben mostrar el BottomNav
+                val routesWithBottomNav = listOf(
+                    Screen.Home.route,
+                    Screen.Favorites.route,
+                    Screen.Profile.route
+                )
+
+                // Items del BottomNav
+                val bottomNavItems = listOf(
                     Screen.Home,
                     Screen.Favorites,
                     Screen.Profile
                 )
 
+                // Mostrar BottomNav solo si estamos en las rutas principales
+                val showBottomNav = currentRoute in routesWithBottomNav
+
                 Scaffold(
                     bottomBar = {
-                        BottomNavigationBar(
-                            items = items,
-                            navController = navController
-                        )
+                        if (showBottomNav) {
+                            BottomNavigationBar(
+                                items = bottomNavItems,
+                                navController = navController
+                            )
+                        }
                     }
                 ) { innerPadding ->
                     NavGraph(
                         navController = navController,
-                        modifier = Modifier.padding(innerPadding)
+                        viewModel = viewModel, // ✅ Pasar ViewModel
+                        modifier = Modifier.padding(innerPadding),
+                        startDestination = if (authRepository.isLoggedIn()) {
+                            Screen.Home.route
+                        } else {
+                            Screen.Login.route
+                        }
                     )
                 }
             }
-
-
         }
     }
 }

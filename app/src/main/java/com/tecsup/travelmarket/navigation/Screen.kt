@@ -9,10 +9,20 @@ sealed class Screen(
     val title: String? = null,
     val icon: ImageVector? = null
 ) {
+    //Pantalla de autenticion
+    object Login : Screen("login")
+    object Register : Screen("register")
+
+    // Barra de navegacion
     object Home : Screen("home", "Inicio", Icons.Filled.Home)
     object Favorites : Screen("favorite", "Favoritos", Icons.Filled.Favorite)
     object Profile : Screen("profile", "Perfil", Icons.Filled.Person)
+
+    // Pantalla de detalle
     object Detail : Screen("detail")
+
+    // Pantalla para editar perfil
+    object EditProfile : Screen("edit_profile")
     
     // Pantallas de categorías
     object Places : Screen("places", "Lugares", Icons.Filled.Place)
