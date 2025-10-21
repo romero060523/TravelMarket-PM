@@ -25,78 +25,51 @@ import com.tecsup.travelmarket.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(navController: NavController? = null) {
+fun ProfileScreen(navController: NavController) {
     val repository = remember { RepositoryProvider.repository }
     val authRepository = remember { AuthRepositoryProvider.authRepository }
-    val user = authRepository.getCurrentUser()
 
+    var user by remember { mutableStateOf(authRepository.getCurrentUser()) }
     var showLogoutDialog by remember { mutableStateOf(false) }
+    var totalFavorites = remember { repository.getTotalFavoritesCount() }
 
-    // Obtener estadísticas
-    val totalFavorites = remember { repository.getTotalFavoritesCount() }
-    val favoritePlaces = remember { repository.getFavoritePlaces().size }
-    val favoriteEvents = remember { repository.getFavoriteEvents().size }
-    val favoriteServices = remember { repository.getFavoriteServices().size }
+    // Recargar datos cada vez que se muestra la pantalla
+    LaunchedEffect(Unit) {
+        user = authRepository.getCurrentUser()
+        totalFavorites = repository.getTotalFavoritesCount()
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(BackgroundWhite)
     ) {
-        // Header con fondo turquesa
+        // Header con icono de configuración
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = TurquoisePrimary,
             tonalElevation = 0.dp
         ) {
-            Column(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // Avatar
-                Surface(
-                    shape = CircleShape,
-                    color = Color.White,
-                    modifier = Modifier.size(100.dp)
-                ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Avatar",
-                            tint = TurquoisePrimary,
-                            modifier = Modifier.size(60.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = user?.name ?: "Usuario",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = user?.email ?: "",
-                    fontSize = 14.sp,
-                    color = Color.White.copy(alpha = 0.9f)
-                )
-
-                if (!user?.phone.isNullOrEmpty()) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Configuración",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = user?.phone ?: "",
-                        fontSize = 14.sp,
-                        color = Color.White.copy(alpha = 0.9f)
+                        text = "Mi Perfil",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                 }
             }
@@ -112,138 +85,189 @@ fun ProfileScreen(navController: NavController? = null) {
         ) {
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Sección de Estadísticas
-            Text(
-                text = "Mis Estadísticas",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Cards de estadísticas en grid 2x2
-            Row(
+            // Card de perfil con avatar
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                StatCard(
-                    icon = Icons.Default.Favorite,
-                    value = totalFavorites.toString(),
-                    label = "Total Favoritos",
-                    color = Color.Red,
-                    modifier = Modifier.weight(1f)
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    // Avatar circular con iniciales
+                    Surface(
+                        shape = CircleShape,
+                        color = TurquoisePrimary,
+                        modifier = Modifier.size(80.dp)
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text(
+                                text = user?.name?.take(2)?.uppercase() ?: "TI",
+                                fontSize = 32.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
 
-                StatCard(
-                    icon = Icons.Default.Place,
-                    value = favoritePlaces.toString(),
-                    label = "Lugares",
-                    color = TurquoisePrimary,
-                    modifier = Modifier.weight(1f)
-                )
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Nombre
+                    Text(
+                        text = user?.name ?: "Turista Invitado",
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    // Email
+                    Text(
+                        text = user?.email ?: "invitado@travelmarket.com",
+                        fontSize = 14.sp,
+                        color = TextSecondary
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Ubicación
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.LocationOn,
+                            contentDescription = "Ubicación",
+                            tint = TurquoisePrimary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Lima, Perú",
+                            fontSize = 13.sp,
+                            color = TextSecondary
+                        )
+                    }
+                }
             }
 
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Sección Opciones
+            Text(
+                text = "Opciones",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                StatCard(
-                    icon = Icons.Default.Event,
-                    value = favoriteEvents.toString(),
-                    label = "Eventos",
-                    color = OrangeSecondary,
-                    modifier = Modifier.weight(1f)
-                )
+            // Opción: Mis favoritos
+            ProfileOptionCard(
+                icon = Icons.Default.Favorite,
+                iconColor = Color.Red,
+                title = "Mis favoritos",
+                subtitle = "$totalFavorites lugares guardados",
+                onClick = {
+                    navController.navigate(Screen.Favorites.route)
+                }
+            )
 
-                StatCard(
-                    icon = Icons.Default.Restaurant,
-                    value = favoriteServices.toString(),
-                    label = "Servicios",
-                    color = BlueAccent,
-                    modifier = Modifier.weight(1f)
-                )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Opción: Editar perfil
+            ProfileOptionCard(
+                icon = Icons.Default.Settings,
+                iconColor = TurquoisePrimary,
+                title = "Editar perfil",
+                subtitle = "Actualizar información",
+                onClick = {
+                    navController.navigate(Screen.EditProfile.route)
+                }
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Card: Acerca de TravelMarket
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = TurquoisePrimary.copy(alpha = 0.1f)
+                ),
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        text = "Acerca de TravelMarket",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Tu guía turística oficial para los Juegos Panamericanos. Descubre lugares, eventos y experiencias únicas en Lima.",
+                        fontSize = 13.sp,
+                        color = TextSecondary,
+                        lineHeight = 18.sp
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Sección de Opciones
-            Text(
-                text = "Configuración",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Opciones del perfil
-            OptionCard(
-                icon = Icons.Default.Edit,
-                title = "Editar Perfil",
-                subtitle = "Actualiza tu información personal"
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OptionCard(
-                icon = Icons.Default.Notifications,
-                title = "Notificaciones",
-                subtitle = "Gestiona tus preferencias"
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OptionCard(
-                icon = Icons.Default.Language,
-                title = "Idioma",
-                subtitle = "Español"
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OptionCard(
-                icon = Icons.Default.Help,
-                title = "Ayuda y Soporte",
-                subtitle = "Obtén ayuda o contacta con soporte"
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OptionCard(
-                icon = Icons.Default.Info,
-                title = "Acerca de",
-                subtitle = "TravelMarket v1.0.0"
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Botón de cerrar sesión
-            OutlinedButton(
+            Button(
                 onClick = { showLogoutDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
                     contentColor = Color.Red
                 ),
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
             ) {
                 Icon(
                     imageVector = Icons.Default.Logout,
-                    contentDescription = "Cerrar sesión"
+                    contentDescription = "Cerrar sesión",
+                    modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Cerrar Sesión",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium
+                    text = "Cerrar sesión",
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Versión
+            Text(
+                text = "Versión 1.0.0 • TravelMarket 2025",
+                fontSize = 12.sp,
+                color = TextLight,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(modifier = Modifier.height(80.dp)) // Espacio para BottomNav
         }
     }
 
@@ -251,38 +275,56 @@ fun ProfileScreen(navController: NavController? = null) {
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(20.dp),
             icon = {
                 Icon(
                     Icons.Default.Logout,
                     contentDescription = "Logout",
-                    tint = Color.Red
+                    tint = Color.Red,
+                    modifier = Modifier.size(48.dp)
                 )
             },
             title = {
-                Text("Cerrar Sesión")
+                Text(
+                    "Cerrar Sesión",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
             },
             text = {
-                Text("¿Estás seguro que deseas cerrar sesión?")
+                Text(
+                    "¿Estás seguro que deseas cerrar sesión?",
+                    color = TextSecondary,
+                    fontSize = 14.sp
+                )
             },
             confirmButton = {
                 Button(
                     onClick = {
                         authRepository.logout()
                         showLogoutDialog = false
-                        navController?.navigate(Screen.Login.route) {
+                        navController.navigate(Screen.Login.route) {
                             popUpTo(0) { inclusive = true }
                         }
                     },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color.Red
-                    )
+                    ),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("Cerrar Sesión")
+                    Text("Cerrar Sesión", fontWeight = FontWeight.SemiBold)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("Cancelar")
+                TextButton(
+                    onClick = { showLogoutDialog = false },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Cancelar", color = TextSecondary)
                 }
             }
         )
@@ -290,67 +332,9 @@ fun ProfileScreen(navController: NavController? = null) {
 }
 
 @Composable
-fun StatCard(
+fun ProfileOptionCard(
     icon: ImageVector,
-    value: String,
-    label: String,
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    Card(
-        modifier = modifier.height(120.dp),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Surface(
-                shape = CircleShape,
-                color = color.copy(alpha = 0.1f),
-                modifier = Modifier.size(48.dp)
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = label,
-                        tint = color,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = value,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-
-            Text(
-                text = label,
-                fontSize = 12.sp,
-                color = TextSecondary
-            )
-        }
-    }
-}
-
-@Composable
-fun OptionCard(
-    icon: ImageVector,
+    iconColor: Color,
     title: String,
     subtitle: String,
     onClick: () -> Unit = {}
@@ -361,6 +345,7 @@ fun OptionCard(
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         onClick = onClick
     ) {
         Row(
@@ -369,26 +354,17 @@ fun OptionCard(
                 .padding(16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Surface(
-                shape = CircleShape,
-                color = BackgroundGray,
-                modifier = Modifier.size(44.dp)
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = title,
-                        tint = TextSecondary,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-            }
+            // Icono
+            Icon(
+                imageVector = icon,
+                contentDescription = title,
+                tint = iconColor,
+                modifier = Modifier.size(24.dp)
+            )
 
             Spacer(modifier = Modifier.width(16.dp))
 
+            // Textos
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
@@ -403,11 +379,12 @@ fun OptionCard(
                 )
             }
 
+            // Flecha
             Icon(
                 imageVector = Icons.Default.ChevronRight,
                 contentDescription = "Ver más",
                 tint = TextLight,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(20.dp)
             )
         }
     }

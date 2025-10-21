@@ -20,6 +20,9 @@ sealed class Screen(
 
     // Pantalla de detalle
     object Detail : Screen("detail")
+
+    // Pantalla para editar perfil
+    object EditProfile : Screen("edit_profile")
     
     // Pantallas de categorías
     object Places : Screen("places", "Lugares", Icons.Filled.Place)

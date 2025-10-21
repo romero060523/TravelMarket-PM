@@ -9,6 +9,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.tecsup.travelmarket.data.TravelViewModel
 import com.tecsup.travelmarket.ui.screens.DetailScreen
+import com.tecsup.travelmarket.ui.screens.EditProfileScreen
 import com.tecsup.travelmarket.ui.screens.HomeScreen
 import com.tecsup.travelmarket.ui.screens.FavoriteScreen
 import com.tecsup.travelmarket.ui.screens.ProfileScreen
@@ -37,7 +38,10 @@ fun NavGraph(
 
         composable(Screen.Home.route) { HomeScreen(navController, viewModel) }
         composable(Screen.Favorites.route) { FavoriteScreen(navController, viewModel) }
-        composable(Screen.Profile.route) { ProfileScreen() }
+
+        // Pantalla de perfil
+        composable(Screen.Profile.route) { ProfileScreen(navController) }
+        composable(Screen.EditProfile.route) { EditProfileScreen(navController) }
         
         // Pantallas de categorías
         composable(Screen.Places.route) { PlacesScreen(navController) }
