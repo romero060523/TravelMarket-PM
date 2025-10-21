@@ -14,15 +14,25 @@ import com.tecsup.travelmarket.ui.screens.ProfileScreen
 import com.tecsup.travelmarket.ui.screens.PlacesScreen
 import com.tecsup.travelmarket.ui.screens.EventsScreen
 import com.tecsup.travelmarket.ui.screens.GastronomyScreen
+import com.tecsup.travelmarket.ui.screens.LoginScreen
+import com.tecsup.travelmarket.ui.screens.RegisterScreen
 import com.tecsup.travelmarket.ui.screens.TransportScreen
 
 @Composable
-fun NavGraph(navController: NavHostController, modifier: Modifier = Modifier) {
+fun NavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier,
+    startDestination: String = Screen.Login.route
+) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route,
+        startDestination = startDestination,
         modifier = modifier
     ) {
+        //Pantallas de autenticacion
+        composable(Screen.Login.route) { LoginScreen(navController) }
+        composable(Screen.Register.route) { RegisterScreen(navController) }
+
         composable(Screen.Home.route) { HomeScreen(navController) }
         composable(Screen.Favorites.route) { FavoriteScreen() }
         composable(Screen.Profile.route) { ProfileScreen() }

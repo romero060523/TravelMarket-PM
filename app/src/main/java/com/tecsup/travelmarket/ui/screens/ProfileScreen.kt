@@ -17,15 +17,20 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tecsup.travelmarket.data.LocalData
+import androidx.navigation.NavController
+import com.tecsup.travelmarket.data.AuthRepositoryProvider
 import com.tecsup.travelmarket.data.RepositoryProvider
+import com.tecsup.travelmarket.navigation.Screen
 import com.tecsup.travelmarket.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(navController: NavController? = null) {
     val repository = remember { RepositoryProvider.repository }
-    val user = LocalData.currentUser
+    val authRepository = remember { AuthRepositoryProvider.authRepository }
+    val user = authRepository.getCurrentUser()
+
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     // Obtener estadísticas
     val totalFavorites = remember { repository.getTotalFavoritesCount() }
@@ -72,7 +77,7 @@ fun ProfileScreen() {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = user.name,
+                    text = user?.name ?: "Usuario",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -81,15 +86,15 @@ fun ProfileScreen() {
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = user.email,
+                    text = user?.email ?: "",
                     fontSize = 14.sp,
                     color = Color.White.copy(alpha = 0.9f)
                 )
 
-                if (user.phone.isNotEmpty()) {
+                if (!user?.phone.isNullOrEmpty()) {
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = user.phone,
+                        text = user?.phone ?: "",
                         fontSize = 14.sp,
                         color = Color.White.copy(alpha = 0.9f)
                     )
@@ -215,9 +220,9 @@ fun ProfileScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Botón de cerrar sesión (placeholder)
+            // Botón de cerrar sesión
             OutlinedButton(
-                onClick = { /* TODO: Implementar logout */ },
+                onClick = { showLogoutDialog = true },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -240,6 +245,47 @@ fun ProfileScreen() {
 
             Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+
+    // Diálogo de confirmación de logout
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            icon = {
+                Icon(
+                    Icons.Default.Logout,
+                    contentDescription = "Logout",
+                    tint = Color.Red
+                )
+            },
+            title = {
+                Text("Cerrar Sesión")
+            },
+            text = {
+                Text("¿Estás seguro que deseas cerrar sesión?")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        authRepository.logout()
+                        showLogoutDialog = false
+                        navController?.navigate(Screen.Login.route) {
+                            popUpTo(0) { inclusive = true }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Red
+                    )
+                ) {
+                    Text("Cerrar Sesión")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }
 
