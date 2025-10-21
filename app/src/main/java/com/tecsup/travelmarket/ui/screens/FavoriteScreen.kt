@@ -12,29 +12,34 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.tecsup.travelmarket.data.RepositoryProvider
+import com.tecsup.travelmarket.data.TravelViewModel
 import com.tecsup.travelmarket.navigation.Screen
 import com.tecsup.travelmarket.ui.components.ItemCard
 import com.tecsup.travelmarket.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavoriteScreen(navController: NavController? = null) {
-    // Obtener el repositorio
-    val repository = remember { RepositoryProvider.repository }
+fun FavoriteScreen(
+    navController: NavController,
+    viewModel: TravelViewModel
+) {
+    // ✅ Observar favoritos del ViewModel
+    val favoritePlaces by viewModel.favoritePlaces.collectAsState()
+    val favoriteEvents by viewModel.favoriteEvents.collectAsState()
+    val favoriteServices by viewModel.favoriteServices.collectAsState()
 
-    // Estado para forzar recomposición cuando cambien los favoritos
-    var refreshTrigger by remember { mutableStateOf(0) }
+    // ✅ Calcular total de favoritos
+    val totalFavorites = favoritePlaces.size + favoriteEvents.size + favoriteServices.size
 
-    // Obtener favoritos del repositorio
-    val favoritePlaces = remember(refreshTrigger) {
-        repository.getFavoritePlaces()
+    // ✅ Efecto para recargar favoritos cuando se muestra la pantalla
+    LaunchedEffect(Unit) {
+        viewModel.loadAllFavorites()
     }
-
-    val hasFavorites = favoritePlaces.isNotEmpty()
 
     Column(
         modifier = Modifier
@@ -50,43 +55,95 @@ fun FavoriteScreen(navController: NavController? = null) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = "Favoritos",
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
+                Icon(
+                    Icons.Default.Favorite,
+                    contentDescription = "Favoritos",
+                    tint = Color.White,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column {
+                    Text(
+                        text = "Mis Favoritos",
+                        color = Color.White,
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.Bold
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
+                    if (totalFavorites > 0) {
                         Text(
-                            text = "Mis Favoritos",
-                            color = Color.White,
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Bold
+                            text = "$totalFavorites elementos guardados",
+                            color = Color.White.copy(alpha = 0.9f),
+                            fontSize = 13.sp
                         )
-                        if (hasFavorites) {
-                            Text(
-                                text = "${favoritePlaces.size} lugar${if (favoritePlaces.size != 1) "es" else ""}",
-                                color = Color.White.copy(alpha = 0.8f),
-                                fontSize = 14.sp
-                            )
-                        }
                     }
                 }
             }
         }
 
-        // Contenido
-        if (!hasFavorites) {
-            // Estado vacío
-            EmptyFavoritesView(navController)
+        // ✅ Si no hay favoritos - mostrar estado vacío
+        if (totalFavorites == 0) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(BackgroundGray)
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    Icons.Default.FavoriteBorder,
+                    contentDescription = "Sin favoritos",
+                    tint = TextLight,
+                    modifier = Modifier.size(80.dp)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "No tienes favoritos",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = TextSecondary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Explora lugares, eventos y servicios",
+                    fontSize = 14.sp,
+                    color = TextLight,
+                    textAlign = TextAlign.Center
+                )
+                Text(
+                    text = "y guarda tus favoritos aquí",
+                    fontSize = 14.sp,
+                    color = TextLight,
+                    textAlign = TextAlign.Center
+                )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                // Botón para ir a Home
+                Button(
+                    onClick = { navController.navigate(Screen.Home.route) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = TurquoisePrimary
+                    )
+                ) {
+                    Icon(
+                        Icons.Default.Explore,
+                        contentDescription = "Explorar",
+                        tint = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Explorar ahora",
+                        color = Color.White,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
         } else {
-            // Lista de favoritos
+            // ✅ Si hay favoritos - mostrar lista
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -96,16 +153,142 @@ fun FavoriteScreen(navController: NavController? = null) {
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                // Información útil
+                // ========== LUGARES FAVORITOS ==========
+                if (favoritePlaces.isNotEmpty()) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Place,
+                                contentDescription = "Lugares",
+                                tint = TurquoisePrimary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Lugares (${favoritePlaces.size})",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                        }
+                    }
+
+                    items(favoritePlaces) { place ->
+                        ItemCard(
+                            name = place.name,
+                            description = place.description,
+                            imageRes = place.imageRes,
+                            category = place.category,
+                            onClick = {
+                                navController.navigate("${Screen.Detail.route}/place/${place.id}")
+                            }
+                        )
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+
+                // ========== EVENTOS FAVORITOS ==========
+                if (favoriteEvents.isNotEmpty()) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Event,
+                                contentDescription = "Eventos",
+                                tint = OrangeSecondary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Eventos (${favoriteEvents.size})",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                        }
+                    }
+
+                    items(favoriteEvents) { event ->
+                        ItemCard(
+                            name = event.name,
+                            description = event.description,
+                            imageRes = event.imageRes,
+                            category = event.category,
+                            onClick = {
+                                navController.navigate("${Screen.Detail.route}/event/${event.id}")
+                            }
+                        )
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+
+                // ========== SERVICIOS FAVORITOS ==========
+                if (favoriteServices.isNotEmpty()) {
+                    item {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                Icons.Default.Restaurant,
+                                contentDescription = "Servicios",
+                                tint = TurquoisePrimary,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Servicios (${favoriteServices.size})",
+                                fontSize = 18.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = TextPrimary
+                            )
+                        }
+                    }
+
+                    items(favoriteServices) { service ->
+                        ItemCard(
+                            name = service.name,
+                            description = service.description,
+                            imageRes = service.imageRes,
+                            category = service.type,
+                            onClick = {
+                                navController.navigate("${Screen.Detail.route}/service/${service.id}")
+                            }
+                        )
+                    }
+
+                    item {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+
+                // ========== MENSAJE INFORMATIVO AL FINAL ==========
                 item {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = TurquoisePrimary.copy(alpha = 0.1f)
+                            containerColor = BackgroundWhite
                         ),
-                        shape = androidx.compose.foundation.shape.RoundedCornerShape(12.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Row(
                             modifier = Modifier
@@ -114,16 +297,16 @@ fun FavoriteScreen(navController: NavController? = null) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Info,
+                                Icons.Default.Info,
                                 contentDescription = "Info",
                                 tint = TurquoisePrimary,
                                 modifier = Modifier.size(24.dp)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
-                                text = "Toca el corazón en los detalles para agregar o quitar favoritos",
+                                text = "Toca el ❤️ en cualquier elemento para quitarlo de favoritos",
                                 fontSize = 13.sp,
-                                color = TextPrimary,
+                                color = TextSecondary,
                                 lineHeight = 18.sp
                             )
                         }
@@ -131,30 +314,12 @@ fun FavoriteScreen(navController: NavController? = null) {
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-
-                // Lista de lugares favoritos
-                items(favoritePlaces) { place ->
-                    ItemCard(
-                        name = place.name,
-                        description = place.description,
-                        imageRes = place.imageRes,
-                        category = place.category,
-                        onClick = {
-                            navController?.navigate("${Screen.Detail.route}/place/${place.id}")
-                        }
-                    )
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(80.dp)) // Espacio para el BottomNav
                 }
             }
         }
     }
 }
-
 @Composable
 fun EmptyFavoritesView(navController: NavController?) {
     Column(

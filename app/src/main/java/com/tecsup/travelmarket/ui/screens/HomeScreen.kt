@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.collectAsState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -18,9 +19,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.tecsup.travelmarket.R
 import com.tecsup.travelmarket.data.Repository
 import com.tecsup.travelmarket.data.SearchResult
+import com.tecsup.travelmarket.data.TravelViewModel
 import com.tecsup.travelmarket.model.*
 import com.tecsup.travelmarket.navigation.Screen
 import com.tecsup.travelmarket.ui.components.ItemCard
@@ -35,30 +36,35 @@ data class Category(
 )
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navController: NavController) {
+fun HomeScreen(
+    navController: NavController,
+    viewModel: TravelViewModel
+) {
     var searchQuery by remember { mutableStateOf("") }
     var showSearchResults by remember { mutableStateOf(false) }
     val repository = remember { Repository() }
-    
+
     // Obtener datos del repositorio
-    val places = repository.getAllPlaces()
-    val events = repository.getAllEvents()
-    val services = repository.getAllServices()
-    
+    val places by viewModel.places.collectAsState()
+    val events by viewModel.events.collectAsState()
+    val services by viewModel.services.collectAsState()
+
+
     // Búsqueda reactiva
     val searchResults by remember(searchQuery) {
         derivedStateOf {
             if (searchQuery.isNotBlank()) {
-                repository.searchItems(searchQuery)
+                viewModel.search(searchQuery)
+                viewModel.searchResults.value
             } else {
                 SearchResult(emptyList(), emptyList(), emptyList())
             }
         }
     }
-    
+
     // Mostrar resultados cuando hay búsqueda
     LaunchedEffect(searchQuery) {
-        showSearchResults = searchQuery.isNotBlank() && searchResults.hasResults
+        showSearchResults = searchQuery.isNotBlank() && (searchResults?.hasResults ?: false)
     }
 
     val categories = listOf(
@@ -136,10 +142,10 @@ fun HomeScreen(navController: NavController) {
             }
 
             // Mostrar resultados de búsqueda si hay query
-            if (showSearchResults) {
+            if (showSearchResults && searchResults != null) {
                 item {
                     SearchResultsSection(
-                        searchResults = searchResults,
+                        searchResults = searchResults!!,
                         onItemClick = { item ->
                             when (item) {
                                 is Place -> navController.navigate("${Screen.Detail.route}/place/${item.id}")
@@ -170,32 +176,32 @@ fun HomeScreen(navController: NavController) {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                        CategoryCard(
-                            category = categories[0],
-                            modifier = Modifier.weight(1f),
-                            onClick = { navController.navigate(categories[0].route) }
-                        )
-                        CategoryCard(
-                            category = categories[1],
-                            modifier = Modifier.weight(1f),
-                            onClick = { navController.navigate(categories[1].route) }
-                        )
+                            CategoryCard(
+                                category = categories[0],
+                                modifier = Modifier.weight(1f),
+                                onClick = { navController.navigate(categories[0].route) }
+                            )
+                            CategoryCard(
+                                category = categories[1],
+                                modifier = Modifier.weight(1f),
+                                onClick = { navController.navigate(categories[1].route) }
+                            )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                        CategoryCard(
-                            category = categories[2],
-                            modifier = Modifier.weight(1f),
-                            onClick = { navController.navigate(categories[2].route) }
-                        )
-                        CategoryCard(
-                            category = categories[3],
-                            modifier = Modifier.weight(1f),
-                            onClick = { navController.navigate(categories[3].route) }
-                        )
+                            CategoryCard(
+                                category = categories[2],
+                                modifier = Modifier.weight(1f),
+                                onClick = { navController.navigate(categories[2].route) }
+                            )
+                            CategoryCard(
+                                category = categories[3],
+                                modifier = Modifier.weight(1f),
+                                onClick = { navController.navigate(categories[3].route) }
+                            )
                         }
                     }
                 }
@@ -217,7 +223,7 @@ fun HomeScreen(navController: NavController) {
                     }
                 }
 
-                // Lista de lugares destacados
+                // ✅ Lista de lugares destacados desde el ViewModel
                 items(places.take(3)) { place ->
                     ItemCard(
                         name = place.name,
@@ -255,7 +261,7 @@ fun SearchResultsSection(
             color = TextPrimary
         )
         Spacer(modifier = Modifier.height(12.dp))
-        
+
         // Lugares encontrados
         if (searchResults.places.isNotEmpty()) {
             Text(
@@ -276,7 +282,7 @@ fun SearchResultsSection(
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
-        
+
         // Eventos encontrados
         if (searchResults.events.isNotEmpty()) {
             Text(
@@ -297,7 +303,7 @@ fun SearchResultsSection(
             }
             Spacer(modifier = Modifier.height(16.dp))
         }
-        
+
         // Servicios encontrados
         if (searchResults.services.isNotEmpty()) {
             Text(
@@ -317,7 +323,7 @@ fun SearchResultsSection(
                 )
             }
         }
-        
+
         // Si no hay resultados
         if (!searchResults.hasResults) {
             Column(

@@ -13,9 +13,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.tecsup.travelmarket.data.AuthRepositoryProvider
+import com.tecsup.travelmarket.data.TravelViewModel
 import com.tecsup.travelmarket.navigation.NavGraph
 import com.tecsup.travelmarket.navigation.Screen
 import com.tecsup.travelmarket.ui.components.BottomNavigationBar
@@ -29,6 +31,9 @@ class MainActivity : ComponentActivity() {
             TravelMarketTheme {
                 val navController = rememberNavController()
                 val authRepository = remember { AuthRepositoryProvider.authRepository }
+
+                // ✅ Crear ViewModel una sola vez
+                val viewModel: TravelViewModel = viewModel()
 
                 // Observar la ruta actual
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -63,6 +68,7 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavGraph(
                         navController = navController,
+                        viewModel = viewModel, // ✅ Pasar ViewModel
                         modifier = Modifier.padding(innerPadding),
                         startDestination = if (authRepository.isLoggedIn()) {
                             Screen.Home.route

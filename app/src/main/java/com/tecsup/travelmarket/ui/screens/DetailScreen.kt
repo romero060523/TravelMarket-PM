@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.tecsup.travelmarket.R
-import com.tecsup.travelmarket.data.RepositoryProvider
+import com.tecsup.travelmarket.data.TravelViewModel
 import com.tecsup.travelmarket.model.Event
 import com.tecsup.travelmarket.model.Place
 import com.tecsup.travelmarket.model.Service
@@ -42,48 +42,64 @@ data class PlaceDetail(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailScreen(placeId: Int?, navController: NavController, type: String? = null) {
-    var isFavorite by remember { mutableStateOf(false) }
-
-    // Cargar desde el Repository cualquier tipo por id
-    val repository = RepositoryProvider.repository
-    val placeData: PlaceDetail = when (val it = placeId?.let { theId ->
-        when (type) {
-            "place" -> repository.getAllPlaces().find { p -> p.id == theId }
-            "event" -> repository.getAllEvents().find { e -> e.id == theId }
-            "service" -> repository.getAllServices().find { s -> s.id == theId }
-            else -> repository.getAllPlaces().find { p -> p.id == theId }
-                ?: repository.getAllEvents().find { e -> e.id == theId }
-                ?: repository.getAllServices().find { s -> s.id == theId }
+fun DetailScreen(
+    placeId: Int?,
+    navController: NavController,
+    type: String? = null,
+    viewModel: TravelViewModel // ✅ Recibir ViewModel
+) {
+    // ✅ Obtener item del ViewModel según el tipo
+    val item = remember(placeId, type) {
+        placeId?.let { id ->
+            when (type?.lowercase()) {
+                "place" -> viewModel.getPlaceById(id)
+                "event" -> viewModel.getEventById(id)
+                "service" -> viewModel.getServiceById(id)
+                else -> null
+            }
         }
-    }) {
+    }
+
+    // ✅ Estado de favorito reactivo
+    var isFavorite by remember(placeId, type) {
+        mutableStateOf(
+            if (placeId != null && type != null) {
+                viewModel.isFavorite(placeId, type)
+            } else {
+                false
+            }
+        )
+    }
+
+    // ✅ Convertir el item a PlaceDetail para mostrar
+    val placeData: PlaceDetail = when (item) {
         is Place -> PlaceDetail(
-            name = it.name,
-            description = it.description,
-            imageRes = it.imageRes,
-            location = it.location,
-            schedule = it.schedule,
-            category = it.category
+            name = item.name,
+            description = item.description,
+            imageRes = item.imageRes,
+            location = item.location,
+            schedule = item.schedule,
+            category = item.category
         )
         is Event -> PlaceDetail(
-            name = it.name,
-            description = it.description,
-            imageRes = it.imageRes,
-            location = it.location,
-            schedule = it.date, // mostramos la fecha como "horario"
-            category = it.category
+            name = item.name,
+            description = item.description,
+            imageRes = item.imageRes,
+            location = item.location,
+            schedule = item.date,
+            category = item.category
         )
         is Service -> PlaceDetail(
-            name = it.name,
-            description = it.description,
-            imageRes = it.imageRes,
-            location = it.location,
-            schedule = it.schedule,
-            category = it.category
+            name = item.name,
+            description = item.description,
+            imageRes = item.imageRes,
+            location = item.location,
+            schedule = item.schedule,
+            category = item.category
         )
         else -> PlaceDetail(
-            name = "Lugar no encontrado",
-            description = "No se encontró información para este lugar.",
+            name = "Elemento no encontrado",
+            description = "No se encontró información para este elemento.",
             imageRes = R.drawable.map,
             imageUrl = null,
             location = "Ubicación desconocida",
@@ -143,9 +159,14 @@ fun DetailScreen(placeId: Int?, navController: NavController, type: String? = nu
                         )
                     }
 
-                    // Botón de favorito
+                    // ✅ Botón de favorito con funcionalidad
                     IconButton(
-                        onClick = { isFavorite = !isFavorite },
+                        onClick = {
+                            if (placeId != null && type != null) {
+                                viewModel.toggleFavorite(placeId, type)
+                                isFavorite = !isFavorite
+                            }
+                        },
                         modifier = Modifier
                             .size(40.dp)
                             .background(Color.White, CircleShape)
@@ -235,25 +256,30 @@ fun DetailScreen(placeId: Int?, navController: NavController, type: String? = nu
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Botón de acción principal
+                // ✅ Botón de acción principal con funcionalidad
                 Button(
-                    onClick = { isFavorite = !isFavorite },
+                    onClick = {
+                        if (placeId != null && type != null) {
+                            viewModel.toggleFavorite(placeId, type)
+                            isFavorite = !isFavorite
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = TurquoisePrimary
+                        containerColor = if (isFavorite) Color.Red else TurquoisePrimary
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.FavoriteBorder,
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                         contentDescription = null,
                         tint = Color.White
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "Guardar en favoritos",
+                        text = if (isFavorite) "Quitar de favoritos" else "Guardar en favoritos",
                         color = Color.White,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold
